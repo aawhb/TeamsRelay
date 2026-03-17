@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <PackageReference Include="System.Management" Version="9.0.0" />
+    <ProjectReference Include="..\TeamsRelay.Core\TeamsRelay.Core.csproj" />
+    <ProjectReference Include="..\TeamsRelay.Source.TeamsUiAutomation\TeamsRelay.Source.TeamsUiAutomation.csproj" />
+    <ProjectReference Include="..\TeamsRelay.Target.KdeConnect\TeamsRelay.Target.KdeConnect.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>TeamsRelay</AssemblyName>
+    <TargetFramework>net9.0-windows</TargetFramework>
+  </PropertyGroup>
+
+</Project>

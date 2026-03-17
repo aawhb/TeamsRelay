@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Build
+        shell: pwsh
+        run: |
+          dotnet build TeamsRelay.sln -nodeReuse:false
+
+      - name: Test
+        shell: pwsh
+        run: |
+          dotnet test tests/TeamsRelay.Tests/TeamsRelay.Tests.csproj -nodeReuse:false
+
+      - name: Wrapper smoke
+        shell: pwsh
+        run: |
+          $version = (Get-Content -LiteralPath VERSION -Raw).Trim()
+
+          $helpOutput = (& .\tr.cmd --help | Out-String)
+          if ($LASTEXITCODE -ne 0) {
+            throw "tr.cmd --help failed."
+          }
+          if ($helpOutput -notmatch "teamsrelay run") {
+            throw "tr.cmd --help did not include usage."
+          }
+
+          $versionOutput = (& .\tr.cmd --version | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) {
+            throw "tr.cmd --version failed."
+          }
+          if ($versionOutput -ne "teamsrelay $version") {
+            throw "Unexpected version output: $versionOutput"
+          }
+
+          & .\tr.cmd config init --help
+          if ($LASTEXITCODE -ne 0) {
+            throw "tr.cmd config init --help failed."
+          }
+
+          & .\tr.cmd run --help
+          if ($LASTEXITCODE -ne 0) {
+            throw "tr.cmd run --help failed."
+          }
+
+      - name: Publish
+        shell: pwsh
+        run: |
+          dotnet publish src/TeamsRelay.App/TeamsRelay.App.csproj -c Release -r win-x64 --self-contained false -o artifacts/publish
