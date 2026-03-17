@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to rebuild, for example v0.1.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5.0.1
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Verify tag matches VERSION
+        shell: pwsh
+        run: |
+          $version = (Get-Content -LiteralPath VERSION -Raw).Trim()
+          $tag = "${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
+          if ($tag -ne "v$version") {
+            throw "Tag '$tag' does not match VERSION '$version'."
+          }
+
+      - name: Publish self-contained package
+        shell: pwsh
+        run: |
+          dotnet publish src/TeamsRelay.App/TeamsRelay.App.csproj -c Release -r win-x64 --self-contained true -o artifacts/publish-self-contained
+
+      - name: Publish framework-dependent package
+        shell: pwsh
+        run: |
+          dotnet publish src/TeamsRelay.App/TeamsRelay.App.csproj -c Release -r win-x64 --self-contained false -o artifacts/publish
+
+      - name: Create release zips
+        id: package
+        shell: pwsh
+        run: |
+          $version = (Get-Content -LiteralPath VERSION -Raw).Trim()
+          $selfContainedDir = Join-Path $PWD "artifacts/publish-self-contained"
+          $frameworkDependentDir = Join-Path $PWD "artifacts/publish"
+          $selfContainedZipName = "TeamsRelay-win-x64-self-contained-v$version.zip"
+          $frameworkDependentZipName = "TeamsRelay-win-x64-v$version.zip"
+          $selfContainedZipPath = Join-Path $PWD $selfContainedZipName
+          $frameworkDependentZipPath = Join-Path $PWD $frameworkDependentZipName
+
+          if (Test-Path $selfContainedZipPath) {
+            Remove-Item $selfContainedZipPath -Force
+          }
+
+          if (Test-Path $frameworkDependentZipPath) {
+            Remove-Item $frameworkDependentZipPath -Force
+          }
+
+          Compress-Archive -Path (Join-Path $selfContainedDir "*") -DestinationPath $selfContainedZipPath -Force
+          Compress-Archive -Path (Join-Path $frameworkDependentDir "*") -DestinationPath $frameworkDependentZipPath -Force
+
+          "self_contained_zip_path=$selfContainedZipPath" >> $env:GITHUB_OUTPUT
+          "self_contained_zip_name=$selfContainedZipName" >> $env:GITHUB_OUTPUT
+          "framework_dependent_zip_path=$frameworkDependentZipPath" >> $env:GITHUB_OUTPUT
+          "framework_dependent_zip_name=$frameworkDependentZipName" >> $env:GITHUB_OUTPUT
+
+      - name: Create or update GitHub Release
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}"
+          $selfContainedZipPath = "${{ steps.package.outputs.self_contained_zip_path }}"
+          $frameworkDependentZipPath = "${{ steps.package.outputs.framework_dependent_zip_path }}"
+
+          if (gh release view $tag *> $null) {
+            gh release upload $tag $selfContainedZipPath $frameworkDependentZipPath --clobber
+          }
+          else {
+            gh release create $tag $selfContainedZipPath $frameworkDependentZipPath --title "TeamsRelay $tag" --notes "Windows self-contained and framework-dependent packages for TeamsRelay $tag."
+          }

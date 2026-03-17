@@ -1,0 +1,22 @@
+# Runtime artifacts
+runtime/
+logs/
+state/
+
+# Local and sensitive data
+config/relay.config*.json
+!config/relay.config.example.json
+
+# Logs and state
+*.log
+*.pid
+*.signal
+
+# PowerShell caches
+*.psd1
+*.psm1~
+
+# .NET build outputs
+bin/
+obj/
+artifacts/

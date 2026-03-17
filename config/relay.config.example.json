@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "source": {
+    "kind": "teams_uia",
+    "captureMode": "strict"
+  },
+  "target": {
+    "kind": "kde_connect",
+    "kdeCliPath": "kdeconnect-cli",
+    "deviceIds": []
+  },
+  "delivery": {
+    "mode": "full_text",
+    "genericPingText": "New Teams activity",
+    "maxMessageLength": 220,
+    "filter": {
+      "directMessages": true,
+      "conversationMessages": true,
+      "unknownTypes": true
+    },
+    "format": {
+      "template": null,
+      "directMessageTemplate": "{sender} | {message}",
+      "conversationMessageTemplate": "{sender}: {message} | {conversationTitle}",
+      "fallbackTemplate": "{text}"
+    }
+  },
+  "runtime": {
+    "logLevel": "info",
+    "memorySnapshotIntervalSeconds": 0,
+    "uiaSubscriptionMode": "both"
+  }
+}
