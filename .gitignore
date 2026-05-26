@@ -12,6 +12,9 @@ state/
 *.psd1
 *.psm1~
 
+# Local admin scripts
+scripts/sync-github-settings.ps1
+
 # .NET build outputs
 bin/
 obj/

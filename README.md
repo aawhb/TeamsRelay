@@ -1,7 +1,10 @@
 # TeamsRelay
 
+[![Quality](https://github.com/aawhb/TeamsRelay/actions/workflows/quality.yml/badge.svg)](https://github.com/aawhb/TeamsRelay/actions/workflows/quality.yml)
+[![CodeQL](https://github.com/aawhb/TeamsRelay/actions/workflows/codeql.yml/badge.svg)](https://github.com/aawhb/TeamsRelay/actions/workflows/codeql.yml)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform: Windows](https://img.shields.io/badge/Platform-Windows-0078D6.svg)](https://github.com/aawhb/TeamsRelay/releases)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/aawhb/TeamsRelay/badge)](https://scorecard.dev/viewer/?uri=github.com/aawhb/TeamsRelay)
 
 **Get Microsoft Teams notifications on one or more mobile devices without installing Teams on them.**
 
@@ -28,8 +31,8 @@ TeamsRelay runs in the background on your Windows PC. When a Teams notification 
 
 GitHub Releases include two Windows ZIP variants:
 
-- `TeamsRelay-win-x64-self-contained-v<version>.zip` — recommended, no .NET install needed
-- `TeamsRelay-win-x64-v<version>.zip` — smaller, requires matching .NET runtime
+- `TeamsRelay-win-x64-self-contained-<version>.zip` — recommended, no .NET install needed
+- `TeamsRelay-win-x64-<version>.zip` — smaller, requires matching .NET runtime
 
 ## Quick Start
 
