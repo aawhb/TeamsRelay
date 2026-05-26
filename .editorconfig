@@ -1,0 +1,63 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.ps1]
+indent_size = 4
+
+[*.psm1]
+indent_size = 4
+
+[*.psd1]
+indent_size = 4
+
+[*.cmd]
+indent_size = 4
+
+[*.json]
+indent_size = 2
+
+[*.yml]
+indent_size = 2
+
+[*.yaml]
+indent_size = 2
+
+[justfile]
+indent_size = 4
+
+[*.md]
+indent_size = 2
+trim_trailing_whitespace = false
+
+[*.cs]
+indent_size = 4
+
+# Private/internal instance fields are _camelCase.
+# Static / const / static readonly fields keep PascalCase via the existing
+# default behaviour (no rule needed).
+dotnet_naming_rule.private_instance_fields_underscore.severity = warning
+dotnet_naming_rule.private_instance_fields_underscore.symbols = private_instance_fields
+dotnet_naming_rule.private_instance_fields_underscore.style = underscore_camel_case
+
+dotnet_naming_symbols.private_instance_fields.applicable_kinds = field
+dotnet_naming_symbols.private_instance_fields.applicable_accessibilities = private, internal, private_protected
+
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+
+# Static/const fields stay PascalCase (overrides the rule above for static members).
+dotnet_naming_rule.static_fields_pascal.severity = warning
+dotnet_naming_rule.static_fields_pascal.symbols = static_fields
+dotnet_naming_rule.static_fields_pascal.style = pascal_case
+
+dotnet_naming_symbols.static_fields.applicable_kinds = field
+dotnet_naming_symbols.static_fields.applicable_accessibilities = private, internal, private_protected, protected, public
+dotnet_naming_symbols.static_fields.required_modifiers = static
+
+dotnet_naming_style.pascal_case.capitalization = pascal_case

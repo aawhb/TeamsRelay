@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "*.*.*"
+
+permissions: read-all
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Check out repository
+        # actions/checkout v5.0.1
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+      - name: Set up .NET
+        # actions/setup-dotnet v5.0.1
+        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Verify release metadata
+        shell: pwsh
+        run: |
+          $version = (Get-Content -LiteralPath VERSION -Raw).Trim()
+          $tag = "${{ github.ref_name }}"
+          if ($tag -ne $version) {
+            throw "Tag '$tag' does not match VERSION '$version'."
+          }
+
+      - name: Verify formatting
+        shell: pwsh
+        run: dotnet format TeamsRelay.sln --verify-no-changes --verbosity minimal
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build TeamsRelay.sln -nodeReuse:false
+
+      - name: Test
+        shell: pwsh
+        run: dotnet test tests/TeamsRelay.Tests/TeamsRelay.Tests.csproj -nodeReuse:false
+
+      - name: Audit dependencies
+        shell: pwsh
+        run: dotnet list TeamsRelay.sln package --vulnerable --include-transitive
+
+      - name: Publish self-contained package
+        shell: pwsh
+        run: dotnet publish src/TeamsRelay.App/TeamsRelay.App.csproj -c Release -r win-x64 --self-contained true -o artifacts/publish-self-contained
+
+      - name: Publish framework-dependent package
+        shell: pwsh
+        run: dotnet publish src/TeamsRelay.App/TeamsRelay.App.csproj -c Release -r win-x64 --self-contained false -o artifacts/publish
+
+      - name: Create release zips
+        id: package
+        shell: pwsh
+        run: |
+          $version = (Get-Content -LiteralPath VERSION -Raw).Trim()
+          $selfContainedDir = Join-Path $PWD "artifacts/publish-self-contained"
+          $frameworkDependentDir = Join-Path $PWD "artifacts/publish"
+          $selfContainedZipName = "TeamsRelay-win-x64-self-contained-$version.zip"
+          $frameworkDependentZipName = "TeamsRelay-win-x64-$version.zip"
+          $selfContainedZipPath = Join-Path $PWD $selfContainedZipName
+          $frameworkDependentZipPath = Join-Path $PWD $frameworkDependentZipName
+
+          if (Test-Path $selfContainedZipPath) {
+            Remove-Item $selfContainedZipPath -Force
+          }
+
+          if (Test-Path $frameworkDependentZipPath) {
+            Remove-Item $frameworkDependentZipPath -Force
+          }
+
+          Compress-Archive -Path (Join-Path $selfContainedDir "*") -DestinationPath $selfContainedZipPath -Force
+          Compress-Archive -Path (Join-Path $frameworkDependentDir "*") -DestinationPath $frameworkDependentZipPath -Force
+
+          "self_contained_zip_path=$selfContainedZipPath" >> $env:GITHUB_OUTPUT
+          "self_contained_zip_name=$selfContainedZipName" >> $env:GITHUB_OUTPUT
+          "framework_dependent_zip_path=$frameworkDependentZipPath" >> $env:GITHUB_OUTPUT
+          "framework_dependent_zip_name=$frameworkDependentZipName" >> $env:GITHUB_OUTPUT
+
+      - name: Generate artifact attestations
+        # actions/attest v4.1.0
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26
+        with:
+          subject-path: |
+            ${{ steps.package.outputs.self_contained_zip_name }}
+            ${{ steps.package.outputs.framework_dependent_zip_name }}
+
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          $selfContainedZipPath = "${{ steps.package.outputs.self_contained_zip_path }}"
+          $frameworkDependentZipPath = "${{ steps.package.outputs.framework_dependent_zip_path }}"
+
+          gh release view $env:TAG_NAME *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Output "Release $env:TAG_NAME already exists; skipping publish to preserve tag immutability."
+          }
+          else {
+            gh release create $env:TAG_NAME `
+              $selfContainedZipPath `
+              $frameworkDependentZipPath `
+              --title "TeamsRelay $env:TAG_NAME" `
+              --notes "Windows self-contained and framework-dependent packages for TeamsRelay $env:TAG_NAME." `
+              --verify-tag
+          }

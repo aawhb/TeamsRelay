@@ -1,0 +1,49 @@
+name: CodeQL Analysis
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions: read-all
+
+jobs:
+  analyze:
+    name: Run CodeQL analysis
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Check out repository
+        # actions/checkout v5.0.1
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+      - name: Set up .NET
+        # actions/setup-dotnet v5.0.1
+        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Initialize CodeQL
+        # github/codeql-action v4.35.5
+        uses: github/codeql-action/init@9e0d7b8d25671d64c341c19c0152d693099fb5ba
+        with:
+          languages: csharp
+          build-mode: manual
+          queries: +security-extended,security-and-quality
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build TeamsRelay.sln -nodeReuse:false
+
+      - name: Perform CodeQL analysis
+        # github/codeql-action v4.35.5
+        uses: github/codeql-action/analyze@9e0d7b8d25671d64c341c19c0152d693099fb5ba
+        with:
+          category: "/language:csharp"

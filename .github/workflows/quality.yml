@@ -1,0 +1,78 @@
+name: Quality Checks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions: read-all
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Run quality checks
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        # actions/checkout v5.0.1
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+
+      - name: Set up .NET
+        # actions/setup-dotnet v5.0.1
+        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Verify formatting
+        shell: pwsh
+        run: dotnet format TeamsRelay.sln --verify-no-changes --verbosity minimal
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build TeamsRelay.sln -nodeReuse:false
+
+      - name: Test
+        shell: pwsh
+        run: dotnet test tests/TeamsRelay.Tests/TeamsRelay.Tests.csproj -nodeReuse:false
+
+      - name: Audit dependencies
+        shell: pwsh
+        run: dotnet list TeamsRelay.sln package --vulnerable --include-transitive
+
+      - name: Wrapper smoke
+        shell: pwsh
+        run: |
+          $version = (Get-Content -LiteralPath VERSION -Raw).Trim()
+
+          $helpOutput = (& .\tr.cmd --help | Out-String)
+          if ($LASTEXITCODE -ne 0) {
+            throw "tr.cmd --help failed."
+          }
+          if ($helpOutput -notmatch "teamsrelay run") {
+            throw "tr.cmd --help did not include usage."
+          }
+
+          $versionOutput = (& .\tr.cmd --version | Out-String).Trim()
+          if ($LASTEXITCODE -ne 0) {
+            throw "tr.cmd --version failed."
+          }
+          if ($versionOutput -ne "teamsrelay $version") {
+            throw "Unexpected version output: $versionOutput"
+          }
+
+          & .\tr.cmd run --help
+          if ($LASTEXITCODE -ne 0) {
+            throw "tr.cmd run --help failed."
+          }
+
+      - name: Publish smoke
+        shell: pwsh
+        run: dotnet publish src/TeamsRelay.App/TeamsRelay.App.csproj -c Release -r win-x64 --self-contained false -o artifacts/publish
