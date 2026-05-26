@@ -1,0 +1,18 @@
+# Runtime artifacts
+runtime/
+logs/
+state/
+
+# Logs and state
+*.log
+*.pid
+*.signal
+
+# PowerShell caches
+*.psd1
+*.psm1~
+
+# .NET build outputs
+bin/
+obj/
+artifacts/

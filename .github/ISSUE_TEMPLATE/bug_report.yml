@@ -1,0 +1,64 @@
+name: Bug report
+description: Report something that is broken or confusing.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting a problem. Please remove private data, account details, and notification content before posting.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the issue and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Run ...
+        3. See ...
+    validations:
+      required: true
+  - type: input
+    id: teamsrelay-version
+    attributes:
+      label: TeamsRelay version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: usage-mode
+    attributes:
+      label: Usage mode
+      options:
+        - Published package
+        - Source checkout
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: windows-version
+    attributes:
+      label: Windows version
+      placeholder: "Windows 11 24H2"
+    validations:
+      required: true
+  - type: input
+    id: teams-version
+    attributes:
+      label: Microsoft Teams version
+      placeholder: "Microsoft Teams version"
+  - type: input
+    id: kde-connect-version
+    attributes:
+      label: KDE Connect version
+      placeholder: "KDE Connect version"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste relevant output from `teamsrelay logs` or `teamsrelay logs --follow`.
