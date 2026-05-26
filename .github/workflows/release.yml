@@ -23,7 +23,7 @@ jobs:
 
       - name: Set up .NET
         # actions/setup-dotnet v5.0.1
-        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602
+        uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7
         with:
           dotnet-version: "9.0.x"
 
