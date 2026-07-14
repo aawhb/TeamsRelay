@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Diagnostics;
 using TeamsRelay.Core;
 
 namespace TeamsRelay.Lifecycle;
@@ -86,6 +88,7 @@ public sealed class RelayRunner
         }
         catch (OperationCanceledException)
         {
+            Trace.TraceInformation("Relay run cancellation requested.");
         }
         finally
         {
@@ -94,7 +97,15 @@ public sealed class RelayRunner
                 using var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
                 await FlushPipelineAsync(force: true, shutdownCts.Token);
             }
-            catch (Exception) { }
+            catch (OperationCanceledException)
+            {
+                await _logWriter.WriteAsync(new RelayLogEntry
+                {
+                    Level = "warning",
+                    Event = "shutdown_flush_cancelled",
+                    Message = "Timed out while flushing pending relay messages during shutdown."
+                }, CancellationToken.None);
+            }
             _sourceAdapter.Stop();
             if (File.Exists(_runtimePaths.StopFilePath))
             {
@@ -133,16 +144,33 @@ public sealed class RelayRunner
                     Message = exception.Message
                 }, cancellationToken);
             }
-            catch (Exception exception)
+            catch (CliException exception)
             {
-                await _logWriter.WriteAsync(new RelayLogEntry
-                {
-                    Level = "error",
-                    Event = "target_send_failed",
-                    Message = exception.Message
-                }, cancellationToken);
+                await WriteTargetSendFailureAsync(exception, cancellationToken);
+            }
+            catch (Win32Exception exception)
+            {
+                await WriteTargetSendFailureAsync(exception, cancellationToken);
+            }
+            catch (IOException exception)
+            {
+                await WriteTargetSendFailureAsync(exception, cancellationToken);
+            }
+            catch (InvalidOperationException exception)
+            {
+                await WriteTargetSendFailureAsync(exception, cancellationToken);
             }
         }
+    }
+
+    private Task WriteTargetSendFailureAsync(Exception exception, CancellationToken cancellationToken)
+    {
+        return _logWriter.WriteAsync(new RelayLogEntry
+        {
+            Level = "error",
+            Event = "target_send_failed",
+            Message = exception.Message
+        }, cancellationToken);
     }
 
     private bool IsDebugLoggingEnabled()

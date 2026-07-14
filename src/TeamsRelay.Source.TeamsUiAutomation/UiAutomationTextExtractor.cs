@@ -109,7 +109,15 @@ internal static class UiAutomationTextExtractor
                 {
                     return _element.Current.Name ?? string.Empty;
                 }
-                catch (Exception)
+                catch (ElementNotAvailableException)
+                {
+                    return string.Empty;
+                }
+                catch (COMException)
+                {
+                    return string.Empty;
+                }
+                catch (InvalidOperationException)
                 {
                     return string.Empty;
                 }
@@ -124,7 +132,15 @@ internal static class UiAutomationTextExtractor
                 {
                     return _element.Current.ControlType.ProgrammaticName ?? string.Empty;
                 }
-                catch (Exception)
+                catch (ElementNotAvailableException)
+                {
+                    return string.Empty;
+                }
+                catch (COMException)
+                {
+                    return string.Empty;
+                }
+                catch (InvalidOperationException)
                 {
                     return string.Empty;
                 }
@@ -140,7 +156,15 @@ internal static class UiAutomationTextExtractor
             {
                 child = walker.GetFirstChild(_element);
             }
-            catch (Exception)
+            catch (ElementNotAvailableException)
+            {
+                yield break;
+            }
+            catch (COMException)
+            {
+                yield break;
+            }
+            catch (InvalidOperationException)
             {
                 yield break;
             }
@@ -153,7 +177,15 @@ internal static class UiAutomationTextExtractor
                 {
                     child = walker.GetNextSibling(child);
                 }
-                catch (Exception)
+                catch (ElementNotAvailableException)
+                {
+                    yield break;
+                }
+                catch (COMException)
+                {
+                    yield break;
+                }
+                catch (InvalidOperationException)
                 {
                     yield break;
                 }
