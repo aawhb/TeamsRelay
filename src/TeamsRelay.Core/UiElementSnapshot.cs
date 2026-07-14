@@ -4,8 +4,6 @@ public abstract record UiElementSnapshot
 {
     public int ProcessId { get; init; }
 
-    public string WindowName { get; init; } = string.Empty;
-
     public string ClassName { get; init; } = string.Empty;
 
     public string RootControlType { get; init; } = string.Empty;

@@ -215,7 +215,6 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
                 EventKind = eventKind,
                 RawEventKind = eventKind,
                 ProcessId = processId,
-                WindowName = element.Current.Name ?? string.Empty,
                 ClassName = element.Current.ClassName ?? string.Empty,
                 RootControlType = element.Current.ControlType.ProgrammaticName ?? string.Empty,
                 AutomationId = element.Current.AutomationId ?? string.Empty,
@@ -266,16 +265,6 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
         }
     }
 
-    private static string Normalize(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return string.Empty;
-        }
-
-        return string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
-    }
-
     private void FlushExpiredCandidates(DateTimeOffset nowUtc)
     {
         var expiredCandidates = _captureClassifier.FlushExpired(nowUtc);
@@ -315,8 +304,8 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
             }
 
             return (
-                Normalize(previous?.Current.Name),
-                Normalize(previous?.Current.ClassName));
+                TextUtilities.NormalizeWhitespace(previous?.Current.Name),
+                TextUtilities.NormalizeWhitespace(previous?.Current.ClassName));
         }
         catch (Exception)
         {

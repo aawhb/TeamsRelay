@@ -23,7 +23,6 @@ internal static class TestHelpers
         string capturePath = "window_opened",
         DateTimeOffset? timestampUtc = null,
         int processId = 4242,
-        string windowName = "Microsoft Teams",
         string className = "Chrome_WidgetWin_1",
         string rootControlType = "ControlType.Pane",
         string automationId = "toast-root",
@@ -42,7 +41,6 @@ internal static class TestHelpers
             RawEventKind = eventKind,
             CapturePath = capturePath,
             ProcessId = processId,
-            WindowName = windowName,
             ClassName = className,
             RootControlType = rootControlType,
             AutomationId = automationId,
@@ -61,7 +59,6 @@ internal static class TestHelpers
         DateTimeOffset timestampUtc,
         string rawEventKind,
         string extractedText,
-        string windowName = "Microsoft Teams",
         string automationId = "toast-root",
         string topLevelWindowName = "Microsoft Teams notification",
         double left = 100,
@@ -73,7 +70,6 @@ internal static class TestHelpers
             extractedText: extractedText,
             eventKind: rawEventKind,
             timestampUtc: timestampUtc,
-            windowName: windowName,
             automationId: automationId,
             topLevelWindowName: topLevelWindowName,
             left: left,
@@ -106,8 +102,6 @@ internal sealed class FakeTargetAdapter : IRelayTargetAdapter
     public bool ThrowOnSend { get; set; }
 
     public PartialTargetSendException? PartialFailure { get; set; }
-
-    public string Kind => "fake";
 
     public Task<IReadOnlyList<RelayDevice>> GetDeviceInventoryAsync(RelayConfig config, CancellationToken cancellationToken = default)
         => Task.FromResult<IReadOnlyList<RelayDevice>>([]);

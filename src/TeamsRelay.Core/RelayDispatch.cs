@@ -8,13 +8,7 @@ public sealed record RelayDispatch
 
     public string ProcessName { get; init; } = string.Empty;
 
-    public string WindowName { get; init; } = string.Empty;
-
-    public string EventKind { get; init; } = string.Empty;
-
     public string CapturePath { get; init; } = string.Empty;
-
-    public string MessageExtracted { get; init; } = string.Empty;
 
     public bool FallbackUsed { get; init; }
 

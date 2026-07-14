@@ -16,8 +16,6 @@ public sealed class KdeConnectTargetAdapter : IRelayTargetAdapter
         _runner = runner ?? new ProcessKdeCommandRunner();
     }
 
-    public string Kind => "kde_connect";
-
     public async Task<IReadOnlyList<RelayDevice>> GetDeviceInventoryAsync(RelayConfig config, CancellationToken cancellationToken = default)
     {
         var executablePath = CommandLocator.Resolve(_environment, config.Target.KdeCliPath);

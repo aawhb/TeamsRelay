@@ -66,7 +66,6 @@ public sealed class RelayPipeline
             return RelayPipelineAddResult.Accepted();
         }
 
-        bucket.LastSeenUtc = dispatch.SeenUtc;
         if (IsBetterCandidate(dispatch, bucket.BestDispatch))
         {
             bucket.BestDispatch = dispatch;
@@ -220,10 +219,7 @@ public sealed class RelayPipeline
             Message = message,
             Fingerprint = BuildFingerprint(parsedNotification, resolvedText),
             ProcessName = processName,
-            WindowName = TeamsNotificationTextAnalyzer.NormalizeVisibleText(record.WindowName),
-            EventKind = record.EventKind,
             CapturePath = capturePath,
-            MessageExtracted = resolvedText,
             FallbackUsed = fallbackUsed,
             HasContent = hasContent,
             SeenUtc = record.TimestampUtc
@@ -368,13 +364,10 @@ public sealed class RelayPipeline
         public CoalescedDispatch(RelayDispatch dispatch)
         {
             FirstSeenUtc = dispatch.SeenUtc;
-            LastSeenUtc = dispatch.SeenUtc;
             BestDispatch = dispatch;
         }
 
         public DateTimeOffset FirstSeenUtc { get; }
-
-        public DateTimeOffset LastSeenUtc { get; set; }
 
         public RelayDispatch BestDispatch { get; set; }
     }

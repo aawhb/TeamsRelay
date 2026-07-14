@@ -9,8 +9,6 @@ public sealed class TeamsNotificationCaptureClassifier
 
     private readonly List<PendingWindowOpenedCandidate> _pendingCandidates = [];
 
-    public int PendingCandidateCount => _pendingCandidates.Count;
-
     public IReadOnlyList<RelaySourceRecord> Process(RelaySourceRecord rawRecord)
     {
         ArgumentNullException.ThrowIfNull(rawRecord);

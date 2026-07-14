@@ -37,8 +37,7 @@ public sealed class TeamsNotificationCaptureClassifierTests
             rawEventKind: "structure_changed",
             extractedText: "Message preview | Alex | Build complete",
             automationId: "chat-pane",
-            topLevelWindowName: "Microsoft Teams",
-            windowName: "Microsoft Teams"));
+            topLevelWindowName: "Microsoft Teams"));
 
         Assert.Empty(ready);
     }
@@ -221,8 +220,7 @@ public sealed class TeamsNotificationCaptureClassifierTests
             rawEventKind: "structure_changed",
             extractedText: "Jordan: Can you review this? | Project Chat",
             automationId: "chat-pane",
-            topLevelWindowName: "Microsoft Teams",
-            windowName: "Microsoft Teams"));
+            topLevelWindowName: "Microsoft Teams"));
 
         Assert.Empty(ready);
     }
@@ -237,8 +235,7 @@ public sealed class TeamsNotificationCaptureClassifierTests
             rawEventKind: "structure_changed",
             extractedText: "Microsoft Teams | Microsoft Teams - Web content - Profile 2 | Untitled | Casey | can you review the release notes when you have a moment",
             automationId: string.Empty,
-            topLevelWindowName: "Microsoft Teams",
-            windowName: "Microsoft Teams"));
+            topLevelWindowName: "Microsoft Teams"));
 
         var candidate = Assert.Single(ready);
         Assert.Equal("structure_changed_banner", candidate.CapturePath);
@@ -254,8 +251,7 @@ public sealed class TeamsNotificationCaptureClassifierTests
             rawEventKind: "structure_changed",
             extractedText: "Jordan: Can you review this? | Project Chat",
             automationId: "toast-root",
-            topLevelWindowName: "Microsoft Teams notification",
-            windowName: "Microsoft Teams"));
+            topLevelWindowName: "Microsoft Teams notification"));
 
         var candidate = Assert.Single(ready);
         Assert.Equal("structure_changed_banner", candidate.CapturePath);
@@ -271,8 +267,7 @@ public sealed class TeamsNotificationCaptureClassifierTests
             rawEventKind: "structure_changed",
             extractedText: "Jordan: Can you review this? | Project Chat",
             automationId: "toast-container",
-            topLevelWindowName: "Microsoft Teams",
-            windowName: "Microsoft Teams"));
+            topLevelWindowName: "Microsoft Teams"));
 
         var candidate = Assert.Single(ready);
         Assert.Equal("structure_changed_banner", candidate.CapturePath);
@@ -288,8 +283,7 @@ public sealed class TeamsNotificationCaptureClassifierTests
             rawEventKind: "structure_changed",
             extractedText: "Jordan: Can you review this? | Project Chat",
             automationId: "other-root",
-            topLevelWindowName: "Microsoft Teams - Chat",
-            windowName: "Microsoft Teams"));
+            topLevelWindowName: "Microsoft Teams - Chat"));
 
         Assert.Empty(ready);
     }
@@ -304,8 +298,7 @@ public sealed class TeamsNotificationCaptureClassifierTests
             rawEventKind: "structure_changed",
             extractedText: "Taylor What are we doing with the release checklist? | What are we doing with the release checklist?",
             automationId: "message-body-1772901936409",
-            topLevelWindowName: "Chat | Project Chat | Microsoft Teams",
-            windowName: "Taylor What are we doing with the release checklist? Today at 9:45 AM."));
+            topLevelWindowName: "Chat | Project Chat | Microsoft Teams"));
 
         Assert.Empty(ready);
     }
@@ -320,8 +313,7 @@ public sealed class TeamsNotificationCaptureClassifierTests
             rawEventKind: "structure_changed",
             extractedText: "Jordan: Can you review this? | Project Chat",
             automationId: "other-root",
-            topLevelWindowName: "Teams Call",
-            windowName: "Microsoft Teams"));
+            topLevelWindowName: "Teams Call"));
 
         var candidate = Assert.Single(ready);
         Assert.Equal("structure_changed_banner", candidate.CapturePath);
@@ -367,8 +359,7 @@ public sealed class TeamsNotificationCaptureClassifierTests
             rawEventKind: "structure_changed",
             extractedText: "Poll: Choices recorded ; Results shared | Weekly Sync | Casey",
             automationId: "other-root",
-            topLevelWindowName: "Microsoft Teams",
-            windowName: "Microsoft Teams"));
+            topLevelWindowName: "Microsoft Teams"));
 
         Assert.Empty(ready);
     }
@@ -383,8 +374,7 @@ public sealed class TeamsNotificationCaptureClassifierTests
             rawEventKind: "structure_changed",
             extractedText: "Microsoft Teams | Profile 1 | 2",
             automationId: "other-root",
-            topLevelWindowName: "Microsoft Teams",
-            windowName: "Microsoft Teams"));
+            topLevelWindowName: "Microsoft Teams"));
 
         Assert.Empty(ready);
     }
