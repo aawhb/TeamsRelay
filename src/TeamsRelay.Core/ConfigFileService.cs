@@ -1,9 +1,15 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace TeamsRelay.Core;
 
 public sealed class ConfigFileService
 {
+    private static readonly JsonSerializerOptions ConfigParsing = new(JsonDefaults.Parsing)
+    {
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+    };
+
     private readonly AppEnvironment _environment;
 
     public ConfigFileService(AppEnvironment environment)
@@ -23,7 +29,7 @@ public sealed class ConfigFileService
         try
         {
             var rawJson = await File.ReadAllTextAsync(resolvedPath, cancellationToken);
-            parsed = JsonSerializer.Deserialize<RelayConfig>(rawJson, JsonDefaults.Parsing);
+            parsed = JsonSerializer.Deserialize<RelayConfig>(rawJson, ConfigParsing);
         }
         catch (JsonException exception)
         {

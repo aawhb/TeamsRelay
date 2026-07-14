@@ -18,7 +18,6 @@
     }
   },
   "runtime": {
-    "logLevel": "info",
-    "memorySnapshotIntervalSeconds": 0
+    "logLevel": "info"
   }
 }
