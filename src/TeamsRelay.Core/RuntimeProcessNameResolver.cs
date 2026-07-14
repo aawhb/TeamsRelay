@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace TeamsRelay.Core;
@@ -27,7 +28,19 @@ public sealed class RuntimeProcessNameResolver : IProcessNameResolver
             using var process = Process.GetProcessById(processId);
             name = process.ProcessName;
         }
-        catch (Exception)
+        catch (ArgumentException)
+        {
+            name = null;
+        }
+        catch (InvalidOperationException)
+        {
+            name = null;
+        }
+        catch (Win32Exception)
+        {
+            name = null;
+        }
+        catch (NotSupportedException)
         {
             name = null;
         }

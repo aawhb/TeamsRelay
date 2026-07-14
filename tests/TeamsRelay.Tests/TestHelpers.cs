@@ -118,7 +118,7 @@ internal sealed class FakeTargetAdapter : IRelayTargetAdapter
 
         if (ThrowOnSend)
         {
-            throw new InvalidOperationException("simulated send failure");
+            throw new CliException("simulated send failure");
         }
 
         Messages.Add(message);

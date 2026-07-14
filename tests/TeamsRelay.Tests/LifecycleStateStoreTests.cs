@@ -59,4 +59,19 @@ public sealed class LifecycleStateStoreTests
         Assert.Equal(LifecycleState.Stale, snapshot.ProcessState);
         Assert.Equal(Process.GetCurrentProcess().Id, snapshot.ProcessId);
     }
+
+    [Fact]
+    public void ReadTreatsMalformedMetadataAsMissing()
+    {
+        var root = TestHelpers.CreateTemporaryDirectory();
+        var paths = RuntimePaths.Create(new AppEnvironment(root));
+        paths.EnsureDirectories();
+        File.WriteAllText(paths.MetadataFilePath, "not json");
+        var store = new LifecycleStateStore(paths);
+
+        var snapshot = store.Read();
+
+        Assert.Equal(LifecycleState.Stopped, snapshot.ProcessState);
+        Assert.Null(snapshot.Metadata);
+    }
 }
