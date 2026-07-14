@@ -22,12 +22,12 @@ jobs:
 
     steps:
       - name: Check out repository
-        # actions/checkout v5.0.1
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        # actions/checkout v7.0.0
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
       - name: Set up .NET
-        # actions/setup-dotnet v5.0.1
-        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602
+        # actions/setup-dotnet v5.4.0
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
         with:
           dotnet-version: "9.0.x"
 
@@ -75,4 +75,8 @@ jobs:
 
       - name: Publish smoke
         shell: pwsh
-        run: dotnet publish src/TeamsRelay.App/TeamsRelay.App.csproj -c Release -r win-x64 --self-contained false -o artifacts/publish
+        run: |
+          dotnet publish src/TeamsRelay.App/TeamsRelay.App.csproj -c Release -r win-x64 --self-contained false -o artifacts/publish
+          if (-not (Test-Path artifacts/publish/config.json -PathType Leaf)) {
+            throw "Published output is missing config.json."
+          }

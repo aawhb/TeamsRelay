@@ -21,18 +21,18 @@ jobs:
 
     steps:
       - name: Check out repository
-        # actions/checkout v5.0.1
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        # actions/checkout v7.0.0
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
       - name: Set up .NET
-        # actions/setup-dotnet v5.0.1
-        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602
+        # actions/setup-dotnet v5.4.0
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
         with:
           dotnet-version: "9.0.x"
 
       - name: Initialize CodeQL
-        # github/codeql-action v4.35.5
-        uses: github/codeql-action/init@9e0d7b8d25671d64c341c19c0152d693099fb5ba
+        # github/codeql-action v4.36.2
+        uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
         with:
           languages: csharp
           build-mode: manual
@@ -43,7 +43,7 @@ jobs:
         run: dotnet build TeamsRelay.sln -nodeReuse:false
 
       - name: Perform CodeQL analysis
-        # github/codeql-action v4.35.5
-        uses: github/codeql-action/analyze@9e0d7b8d25671d64c341c19c0152d693099fb5ba
+        # github/codeql-action v4.36.2
+        uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
         with:
           category: "/language:csharp"
