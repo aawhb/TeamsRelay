@@ -17,11 +17,10 @@ public sealed class ConfigFileServiceTests
         Assert.True(validated.Delivery.Filter.UnknownTypes);
         Assert.Equal("{sender} | {message}", validated.Delivery.Format.DirectMessageTemplate);
         Assert.Equal("{sender}: {message} | {conversationTitle}", validated.Delivery.Format.ConversationMessageTemplate);
-        Assert.DoesNotContain("dedupeWindowSeconds", json);
     }
 
     [Fact]
-    public async Task LoadIgnoresUnknownProperties()
+    public async Task LoadRejectsUnknownProperties()
     {
         var root = TestHelpers.CreateTemporaryDirectory();
         var environment = new AppEnvironment(root);
@@ -31,34 +30,16 @@ public sealed class ConfigFileServiceTests
         Directory.CreateDirectory(Path.GetDirectoryName(configPath)!);
         await File.WriteAllTextAsync(configPath, """
         {
-          "version": 1,
-          "source": {
-            "kind": "teams_uia"
-          },
-          "target": {
-            "kind": "kde_connect",
-            "kdeCliPath": "kdeconnect-cli",
-            "deviceIds": []
-          },
-          "delivery": {
-            "mode": "full_text",
-            "genericPingText": "New Teams activity",
-            "maxMessageLength": 220,
-            "dedupeWindowSeconds": 8,
-            "format": {
-              "template": "ignored"
-            }
-          },
           "runtime": {
-            "logLevel": "info"
+            "logLevel": "info",
+            "memorySnapshotIntervalSeconds": 60
           }
         }
         """);
 
-        var resolved = await service.LoadAsync(path: null);
+        var exception = await Assert.ThrowsAsync<CliException>(() => service.LoadAsync(path: null));
 
-        Assert.Equal("full_text", resolved.Config.Delivery.Mode);
-        Assert.Equal(220, resolved.Config.Delivery.MaxMessageLength);
+        Assert.Contains("memorySnapshotIntervalSeconds", exception.Message);
     }
 
     [Fact]

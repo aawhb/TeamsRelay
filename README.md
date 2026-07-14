@@ -34,6 +34,8 @@ GitHub Releases include two Windows ZIP variants:
 - `TeamsRelay-win-x64-self-contained-<version>.zip` — recommended, no .NET install needed
 - `TeamsRelay-win-x64-<version>.zip` — smaller, requires matching .NET runtime
 
+Extract either ZIP before running it. Each includes a default `config.json` beside `TeamsRelay.exe`.
+
 ## Quick Start
 
 > Using a source checkout? Replace `TeamsRelay.exe` with `just` or `.\tr.cmd`. See [Development](#development).
@@ -44,7 +46,7 @@ TeamsRelay.exe devices         # 2. list paired devices
 TeamsRelay.exe start           # 3. start relaying in the background
 ```
 
-Default settings live in `config.json` at the repo root. Edit it in place.
+Edit the `config.json` next to `TeamsRelay.exe` for your setup.
 
 Every Teams notification banner now forwards to your paired device(s). If `deviceIds` is empty in your config, TeamsRelay prompts you to pick a device on first start.
 
@@ -58,9 +60,9 @@ Use `run` instead of `start` for foreground mode (Ctrl+C to stop).
 
 ## Configuration
 
-Settings live in `config.json` at the repo root. It is tracked in git with sane defaults; edit it in place for your setup.
+Release ZIPs include `config.json` beside `TeamsRelay.exe`; it is the default configuration location. Source checkouts use the tracked root `config.json`. Use `--config <path>` to select another file.
 
-To keep your local edits out of `git status`, run once after cloning:
+Unknown settings are rejected so misspellings and removed options fail early. To keep local source-checkout edits out of `git status`, run once after cloning:
 
 ```powershell
 git update-index --skip-worktree config.json
@@ -90,8 +92,7 @@ git update-index --skip-worktree config.json
     }
   },
   "runtime": {
-    "logLevel": "info",
-    "memorySnapshotIntervalSeconds": 0
+    "logLevel": "info"
   }
 }
 ```
@@ -111,7 +112,6 @@ git update-index --skip-worktree config.json
 | `delivery.format.directMessageTemplate` | `{sender} \| {message}` | Variables: `{sender}`, `{message}`, `{conversationTitle}`, `{text}`. Set to `null` to send raw text. |
 | `delivery.format.conversationMessageTemplate` | `{sender}: {message} \| {conversationTitle}` | Set to `null` to send raw text. |
 | `runtime.logLevel` | `info` | `debug` for troubleshooting. |
-| `runtime.memorySnapshotIntervalSeconds` | `0` | Set to e.g. `60` to log memory/queue stats periodically. |
 
 If a type-specific template references a missing variable, TeamsRelay falls back to the raw cleaned text rather than rendering broken output.
 
@@ -162,8 +162,6 @@ teamsrelay doctor [--config <path>]
 
 **Repeated text in forwarded notifications** — TeamsRelay normalizes duplicated segments. If you still see odd text, set `runtime.logLevel` to `debug`, reproduce, and check the raw payload in the logs.
 
-**RAM usage growing** — Set `runtime.memorySnapshotIntervalSeconds` to `60` and watch `logs --follow` for `memory_snapshot` entries showing working set and queue depths.
-
 ## Runtime Files
 
 Working files under `runtime\` are managed automatically.
@@ -206,7 +204,8 @@ just publish                  # framework-dependent: artifacts\publish\TeamsRela
 ```
 src/
   TeamsRelay.App/                          CLI, commands, device selection
-  TeamsRelay.Core/                         Config, pipeline, state, logging, relay loop
+  TeamsRelay.Core/                         Config, contracts, pipeline, logging, runtime paths
+  TeamsRelay.Lifecycle/                    Relay loop, background lifecycle, state tracking
   TeamsRelay.Source.TeamsUiAutomation/      Teams notification capture via UI Automation
   TeamsRelay.Target.KdeConnect/            KDE Connect discovery and delivery
 tests/

@@ -7,7 +7,6 @@
   <ItemGroup>
     <PackageReference Include="System.Management" Version="9.0.0" />
     <ProjectReference Include="..\TeamsRelay.Core\TeamsRelay.Core.csproj" />
-    <ProjectReference Include="..\TeamsRelay.Source.TeamsUiAutomation\TeamsRelay.Source.TeamsUiAutomation.csproj" />
   </ItemGroup>
 
 </Project>
