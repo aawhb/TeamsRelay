@@ -31,8 +31,8 @@ jobs:
           dotnet-version: "9.0.x"
 
       - name: Initialize CodeQL
-        # github/codeql-action v4.36.2
-        uses: github/codeql-action/init@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
+        # github/codeql-action v4.37.0
+        uses: github/codeql-action/init@99df26d4f13ea111d4ec1a7dddef6063f76b97e9
         with:
           languages: csharp
           build-mode: manual
@@ -43,7 +43,7 @@ jobs:
         run: dotnet build TeamsRelay.sln -nodeReuse:false
 
       - name: Perform CodeQL analysis
-        # github/codeql-action v4.36.2
-        uses: github/codeql-action/analyze@8aad20d150bbac5944a9f9d289da16a4b0d87c1e
+        # github/codeql-action v4.37.0
+        uses: github/codeql-action/analyze@99df26d4f13ea111d4ec1a7dddef6063f76b97e9
         with:
           category: "/language:csharp"
