@@ -209,9 +209,13 @@ public sealed class RelayRunnerTests
                     }
                 }
                 catch (IOException)
-                { }
+                {
+                    continue;
+                }
                 catch (JsonException)
-                { }
+                {
+                    continue;
+                }
 
                 await Task.Delay(TimeSpan.FromMilliseconds(50));
             }

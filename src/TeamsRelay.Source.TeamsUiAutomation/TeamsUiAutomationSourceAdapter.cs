@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Automation;
 using System.Windows.Threading;
@@ -59,7 +61,19 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
                     TreeScope.Subtree,
                     _structureChangedHandler);
             }
-            catch (Exception exception)
+            catch (ElementNotAvailableException exception)
+            {
+                startupException = exception;
+                ready.Set();
+                return;
+            }
+            catch (COMException exception)
+            {
+                startupException = exception;
+                ready.Set();
+                return;
+            }
+            catch (InvalidOperationException exception)
             {
                 startupException = exception;
                 ready.Set();
@@ -102,7 +116,18 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
             {
                 Automation.RemoveAllEventHandlers();
             }
-            catch (Exception) { }
+            catch (ElementNotAvailableException exception)
+            {
+                ReportAutomationFailure("removing global handlers", exception);
+            }
+            catch (COMException exception)
+            {
+                ReportAutomationFailure("removing global handlers", exception);
+            }
+            catch (InvalidOperationException exception)
+            {
+                ReportAutomationFailure("removing global handlers", exception);
+            }
         }
 
         _workerThread = null;
@@ -155,7 +180,15 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
         {
             processId = element.Current.ProcessId;
         }
-        catch (Exception)
+        catch (ElementNotAvailableException)
+        {
+            return;
+        }
+        catch (COMException)
+        {
+            return;
+        }
+        catch (InvalidOperationException)
         {
             return;
         }
@@ -188,7 +221,15 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
                 ExtractedText = UiAutomationTextExtractor.ExtractText(element)
             };
         }
-        catch (Exception)
+        catch (ElementNotAvailableException)
+        {
+            return;
+        }
+        catch (COMException)
+        {
+            return;
+        }
+        catch (InvalidOperationException)
         {
             return;
         }
@@ -215,7 +256,6 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
                 EventKind = eventKind,
                 RawEventKind = eventKind,
                 ProcessId = processId,
-                WindowName = element.Current.Name ?? string.Empty,
                 ClassName = element.Current.ClassName ?? string.Empty,
                 RootControlType = element.Current.ControlType.ProgrammaticName ?? string.Empty,
                 AutomationId = element.Current.AutomationId ?? string.Empty,
@@ -229,7 +269,17 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
             };
             return true;
         }
-        catch (Exception)
+        catch (ElementNotAvailableException)
+        {
+            record = new RelaySourceRecord();
+            return false;
+        }
+        catch (COMException)
+        {
+            record = new RelaySourceRecord();
+            return false;
+        }
+        catch (InvalidOperationException)
         {
             record = new RelaySourceRecord();
             return false;
@@ -248,7 +298,18 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
                     _windowOpenedHandler);
             }
         }
-        catch (Exception) { }
+        catch (ElementNotAvailableException exception)
+        {
+            ReportAutomationFailure("removing window-opened handler", exception);
+        }
+        catch (COMException exception)
+        {
+            ReportAutomationFailure("removing window-opened handler", exception);
+        }
+        catch (InvalidOperationException exception)
+        {
+            ReportAutomationFailure("removing window-opened handler", exception);
+        }
         try
         {
             if (_structureChangedHandler is not null)
@@ -258,22 +319,23 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
                     _structureChangedHandler);
             }
         }
-        catch (Exception) { }
+        catch (ElementNotAvailableException exception)
+        {
+            ReportAutomationFailure("removing structure-changed handler", exception);
+        }
+        catch (COMException exception)
+        {
+            ReportAutomationFailure("removing structure-changed handler", exception);
+        }
+        catch (InvalidOperationException exception)
+        {
+            ReportAutomationFailure("removing structure-changed handler", exception);
+        }
         finally
         {
             _windowOpenedHandler = null;
             _structureChangedHandler = null;
         }
-    }
-
-    private static string Normalize(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return string.Empty;
-        }
-
-        return string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
     }
 
     private void FlushExpiredCandidates(DateTimeOffset nowUtc)
@@ -315,12 +377,25 @@ public sealed class TeamsUiAutomationSourceAdapter : IRelaySourceAdapter
             }
 
             return (
-                Normalize(previous?.Current.Name),
-                Normalize(previous?.Current.ClassName));
+                TextUtilities.NormalizeWhitespace(previous?.Current.Name),
+                TextUtilities.NormalizeWhitespace(previous?.Current.ClassName));
         }
-        catch (Exception)
+        catch (ElementNotAvailableException)
         {
             return (string.Empty, string.Empty);
         }
+        catch (COMException)
+        {
+            return (string.Empty, string.Empty);
+        }
+        catch (InvalidOperationException)
+        {
+            return (string.Empty, string.Empty);
+        }
+    }
+
+    private static void ReportAutomationFailure(string operation, Exception exception)
+    {
+        Trace.TraceWarning("UI Automation failure while {0}: {1}", operation, exception.Message);
     }
 }

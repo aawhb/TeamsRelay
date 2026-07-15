@@ -18,12 +18,12 @@ jobs:
 
     steps:
       - name: Check out repository
-        # actions/checkout v5.0.1
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd
+        # actions/checkout v7.0.0
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
 
       - name: Set up .NET
-        # actions/setup-dotnet v5.0.1
-        uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602
+        # actions/setup-dotnet v5.4.0
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
         with:
           dotnet-version: "9.0.x"
 
@@ -72,6 +72,12 @@ jobs:
           $selfContainedZipPath = Join-Path $PWD $selfContainedZipName
           $frameworkDependentZipPath = Join-Path $PWD $frameworkDependentZipName
 
+          foreach ($publishDirectory in @($selfContainedDir, $frameworkDependentDir)) {
+            if (-not (Test-Path (Join-Path $publishDirectory "config.json") -PathType Leaf)) {
+              throw "Published output is missing config.json: $publishDirectory"
+            }
+          }
+
           if (Test-Path $selfContainedZipPath) {
             Remove-Item $selfContainedZipPath -Force
           }
@@ -89,8 +95,8 @@ jobs:
           "framework_dependent_zip_name=$frameworkDependentZipName" >> $env:GITHUB_OUTPUT
 
       - name: Generate artifact attestations
-        # actions/attest v4.1.0
-        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26
+        # actions/attest v4.1.1
+        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763
         with:
           subject-path: |
             ${{ steps.package.outputs.self_contained_zip_name }}

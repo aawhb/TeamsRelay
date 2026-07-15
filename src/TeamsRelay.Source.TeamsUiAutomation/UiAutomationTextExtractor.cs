@@ -1,4 +1,6 @@
 using System.Windows.Automation;
+using System.Runtime.InteropServices;
+using TeamsRelay.Core;
 
 namespace TeamsRelay.Source.TeamsUiAutomation;
 
@@ -69,7 +71,7 @@ internal static class UiAutomationTextExtractor
 
     private static void Append(List<string> parts, HashSet<string> seen, string? value)
     {
-        var normalized = Normalize(value);
+        var normalized = TextUtilities.NormalizeWhitespace(value);
         if (string.IsNullOrWhiteSpace(normalized) || normalized.Length < 2 || !seen.Add(normalized))
         {
             return;
@@ -86,16 +88,6 @@ internal static class UiAutomationTextExtractor
             || programmaticName.EndsWith(".Custom", StringComparison.Ordinal)
             || programmaticName.EndsWith(".Pane", StringComparison.Ordinal)
             || programmaticName.EndsWith(".Group", StringComparison.Ordinal);
-    }
-
-    private static string Normalize(string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return string.Empty;
-        }
-
-        return string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
     }
 
     private readonly record struct NodeFrame(IUiAutomationNode Node, int Depth);
@@ -117,7 +109,15 @@ internal static class UiAutomationTextExtractor
                 {
                     return _element.Current.Name ?? string.Empty;
                 }
-                catch (Exception)
+                catch (ElementNotAvailableException)
+                {
+                    return string.Empty;
+                }
+                catch (COMException)
+                {
+                    return string.Empty;
+                }
+                catch (InvalidOperationException)
                 {
                     return string.Empty;
                 }
@@ -132,7 +132,15 @@ internal static class UiAutomationTextExtractor
                 {
                     return _element.Current.ControlType.ProgrammaticName ?? string.Empty;
                 }
-                catch (Exception)
+                catch (ElementNotAvailableException)
+                {
+                    return string.Empty;
+                }
+                catch (COMException)
+                {
+                    return string.Empty;
+                }
+                catch (InvalidOperationException)
                 {
                     return string.Empty;
                 }
@@ -148,7 +156,15 @@ internal static class UiAutomationTextExtractor
             {
                 child = walker.GetFirstChild(_element);
             }
-            catch (Exception)
+            catch (ElementNotAvailableException)
+            {
+                yield break;
+            }
+            catch (COMException)
+            {
+                yield break;
+            }
+            catch (InvalidOperationException)
             {
                 yield break;
             }
@@ -161,7 +177,15 @@ internal static class UiAutomationTextExtractor
                 {
                     child = walker.GetNextSibling(child);
                 }
-                catch (Exception)
+                catch (ElementNotAvailableException)
+                {
+                    yield break;
+                }
+                catch (COMException)
+                {
+                    yield break;
+                }
+                catch (InvalidOperationException)
                 {
                     yield break;
                 }

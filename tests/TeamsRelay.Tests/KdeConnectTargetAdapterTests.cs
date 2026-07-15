@@ -90,6 +90,19 @@ public sealed class KdeConnectTargetAdapterTests
     }
 
     [Fact]
+    public async Task DoctorReportsExpectedCommandRunnerFailures()
+    {
+        var root = TestHelpers.CreateTemporaryDirectory();
+        var environment = new AppEnvironment(root);
+        var adapter = new KdeConnectTargetAdapter(environment, new FakeKdeCommandRunner());
+
+        var report = await adapter.RunDoctorAsync(CreateConfig(root));
+
+        Assert.True(report.HasBlockingFailures);
+        Assert.Contains(report.Checks, check => check.Name == "kde_daemon_responsive" && !check.Passed);
+    }
+
+    [Fact]
     public async Task SendAsyncThrowsPartialFailureWhenOnlySomeTargetsSucceed()
     {
         var root = TestHelpers.CreateTemporaryDirectory();

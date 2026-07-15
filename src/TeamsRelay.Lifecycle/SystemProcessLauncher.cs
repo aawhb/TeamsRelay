@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.ComponentModel;
 
 namespace TeamsRelay.Lifecycle;
 
@@ -22,7 +23,15 @@ public sealed class SystemProcessLauncher : IProcessLauncher
             using var process = Process.GetProcessById(processId);
             return !process.HasExited;
         }
-        catch (Exception)
+        catch (ArgumentException)
+        {
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
+        catch (Win32Exception)
         {
             return false;
         }
@@ -39,7 +48,14 @@ public sealed class SystemProcessLauncher : IProcessLauncher
                 process.WaitForExit(TimeSpan.FromSeconds(3));
             }
         }
-        catch (Exception) { }
+        catch (ArgumentException)
+        {
+            return;
+        }
+        catch (InvalidOperationException)
+        {
+            return;
+        }
     }
 
     public bool TryGetStartTime(int processId, out DateTimeOffset startTimeUtc)
@@ -50,7 +66,17 @@ public sealed class SystemProcessLauncher : IProcessLauncher
             startTimeUtc = new DateTimeOffset(process.StartTime);
             return true;
         }
-        catch (Exception)
+        catch (ArgumentException)
+        {
+            startTimeUtc = default;
+            return false;
+        }
+        catch (InvalidOperationException)
+        {
+            startTimeUtc = default;
+            return false;
+        }
+        catch (Win32Exception)
         {
             startTimeUtc = default;
             return false;

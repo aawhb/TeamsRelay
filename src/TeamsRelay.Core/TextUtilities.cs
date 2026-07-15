@@ -2,6 +2,13 @@ namespace TeamsRelay.Core;
 
 public static class TextUtilities
 {
+    public static string NormalizeWhitespace(string? value)
+    {
+        return string.IsNullOrWhiteSpace(value)
+            ? string.Empty
+            : string.Join(' ', value.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+    }
+
     public static string TruncateWithEllipsis(string value, int maxLength)
     {
         ArgumentNullException.ThrowIfNull(value);

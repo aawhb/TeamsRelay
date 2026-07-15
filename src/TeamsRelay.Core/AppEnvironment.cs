@@ -15,7 +15,7 @@ public sealed class AppEnvironment
     {
         var configuredRoot = Environment.GetEnvironmentVariable("TEAMSRELAY_ROOT");
         var rootDirectory = string.IsNullOrWhiteSpace(configuredRoot)
-            ? Directory.GetCurrentDirectory()
+            ? AppContext.BaseDirectory
             : configuredRoot;
 
         return new AppEnvironment(rootDirectory);

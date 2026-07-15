@@ -1,6 +1,4 @@
-using TeamsRelay.Core;
-
-namespace TeamsRelay.Lifecycle;
+namespace TeamsRelay.Core;
 
 public sealed record RuntimePaths(
     string RuntimeDirectory,

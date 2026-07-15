@@ -16,8 +16,6 @@ public sealed class KdeConnectTargetAdapter : IRelayTargetAdapter
         _runner = runner ?? new ProcessKdeCommandRunner();
     }
 
-    public string Kind => "kde_connect";
-
     public async Task<IReadOnlyList<RelayDevice>> GetDeviceInventoryAsync(RelayConfig config, CancellationToken cancellationToken = default)
     {
         var executablePath = CommandLocator.Resolve(_environment, config.Target.KdeCliPath);
@@ -45,20 +43,27 @@ public sealed class KdeConnectTargetAdapter : IRelayTargetAdapter
     public async Task<RelayDiagnosticReport> RunDoctorAsync(RelayConfig config, CancellationToken cancellationToken = default)
     {
         var checks = new List<RelayDiagnosticCheck>();
-        var runtimeDirectory = _environment.ResolvePath("runtime");
+        var runtimePaths = RuntimePaths.Create(_environment);
         try
         {
-            Directory.CreateDirectory(runtimeDirectory);
-            Directory.CreateDirectory(Path.Combine(runtimeDirectory, "state"));
-            Directory.CreateDirectory(Path.Combine(runtimeDirectory, "logs"));
+            runtimePaths.EnsureDirectories();
             checks.Add(new RelayDiagnosticCheck
             {
                 Name = "runtime_dirs_writable",
                 Passed = true,
-                Details = runtimeDirectory
+                Details = runtimePaths.RuntimeDirectory
             });
         }
-        catch (Exception exception)
+        catch (IOException exception)
+        {
+            checks.Add(new RelayDiagnosticCheck
+            {
+                Name = "runtime_dirs_writable",
+                Passed = false,
+                Details = exception.Message
+            });
+        }
+        catch (UnauthorizedAccessException exception)
         {
             checks.Add(new RelayDiagnosticCheck
             {
@@ -102,7 +107,40 @@ public sealed class KdeConnectTargetAdapter : IRelayTargetAdapter
                 Details = "kdeconnect-cli list succeeded"
             });
         }
-        catch (Exception exception)
+        catch (CliException exception)
+        {
+            checks.Add(new RelayDiagnosticCheck
+            {
+                Name = "kde_daemon_responsive",
+                Passed = false,
+                Details = exception.Message
+            });
+
+            return new RelayDiagnosticReport { Checks = checks };
+        }
+        catch (IOException exception)
+        {
+            checks.Add(new RelayDiagnosticCheck
+            {
+                Name = "kde_daemon_responsive",
+                Passed = false,
+                Details = exception.Message
+            });
+
+            return new RelayDiagnosticReport { Checks = checks };
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            checks.Add(new RelayDiagnosticCheck
+            {
+                Name = "kde_daemon_responsive",
+                Passed = false,
+                Details = exception.Message
+            });
+
+            return new RelayDiagnosticReport { Checks = checks };
+        }
+        catch (InvalidOperationException exception)
         {
             checks.Add(new RelayDiagnosticCheck
             {

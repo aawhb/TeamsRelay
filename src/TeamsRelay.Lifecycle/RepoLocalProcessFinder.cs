@@ -1,4 +1,6 @@
 using System.Management;
+using System.Runtime.InteropServices;
+using System.Security;
 using System.Text.RegularExpressions;
 
 namespace TeamsRelay.Lifecycle;
@@ -34,7 +36,15 @@ public sealed class RepoLocalProcessFinder
                 }
             }
         }
-        catch (Exception)
+        catch (ManagementException)
+        {
+            return [];
+        }
+        catch (COMException)
+        {
+            return [];
+        }
+        catch (UnauthorizedAccessException)
         {
             return [];
         }
@@ -100,7 +110,19 @@ public sealed class RepoLocalProcessFinder
             return normalizedCandidate.Equals(normalizedRoot, StringComparison.OrdinalIgnoreCase)
                 || normalizedCandidate.StartsWith(normalizedRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
         }
-        catch (Exception)
+        catch (ArgumentException)
+        {
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            return false;
+        }
+        catch (PathTooLongException)
+        {
+            return false;
+        }
+        catch (SecurityException)
         {
             return false;
         }

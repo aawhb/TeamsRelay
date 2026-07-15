@@ -79,7 +79,15 @@ public sealed class LifecycleStateStore
             var raw = File.ReadAllText(_paths.MetadataFilePath);
             return JsonSerializer.Deserialize<InstanceMetadata>(raw, JsonDefaults.Indented);
         }
-        catch (Exception)
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+        catch (JsonException)
         {
             return null;
         }
